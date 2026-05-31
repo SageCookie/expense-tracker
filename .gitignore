@@ -1,14 +1,22 @@
-# Dependency directories
+# Frontend
 node_modules/
-
-# Environment variables (SECURITY CRITICAL)
-.env
-
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# OS generated files
+dist/
+.env.local
+.env.*.local
+*.log
 .DS_Store
-Thumbs.db
+
+# Backend
+node_modules/
+.env
+.env.local
+*.log
+mongoose_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
