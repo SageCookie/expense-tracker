@@ -7,13 +7,13 @@ export default function Input({ label, type = 'text', error, icon: Icon, ...prop
 
   return (
     <div className="mb-4">
-      {label && <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>}
+      {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{label}</label>}
       <div className="relative">
-        {Icon && <Icon className="absolute left-3 top-3 text-gray-400" size={20} />}
+        {Icon && <Icon className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" size={20} />}
         <input
           type={inputType}
-          className={`w-full px-4 py-2 ${Icon ? 'pl-10' : ''} border rounded-lg focus:outline-none transition-colors ${
-            error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-2 focus:ring-primary'
+          className={`w-full px-4 py-2 ${Icon ? 'pl-10' : ''} border rounded-lg focus:outline-none transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${
+            error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500'
           }`}
           {...props}
         />

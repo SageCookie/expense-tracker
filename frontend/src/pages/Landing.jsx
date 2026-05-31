@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { TrendingDown, BarChart3, Lock, Zap } from 'lucide-react'
 import Button from '../components/Button'
+import Navbar from '../components/Navbar'
 
 export default function Landing() {
   const features = [
@@ -38,25 +39,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white dark:bg-gray-900 bg-opacity-95 backdrop-blur-md shadow-sm z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform duration-300">₹</div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">Hisaab</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="outline" size="sm">Login</Button>
-            </Link>
-            <Link to="/register">
-              <Button variant="primary" size="sm">Sign Up</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">

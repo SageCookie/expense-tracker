@@ -1,9 +1,7 @@
-import { Moon, Sun, Globe } from 'lucide-react'
-import { useTheme } from '../context/ThemeContext'
+import { Globe } from 'lucide-react'
 import { useCurrency } from '../context/CurrencyContext'
 
 export default function Settings({ isOpen, onClose }) {
-  const { isDark, toggleTheme } = useTheme()
   const { currency, setCurrency, CURRENCIES } = useCurrency()
 
   if (!isOpen) return null
@@ -20,39 +18,6 @@ export default function Settings({ isOpen, onClose }) {
           >
             ×
           </button>
-        </div>
-
-        {/* Theme Section */}
-        <div className="p-6 border-b dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            {isDark ? <Moon size={20} /> : <Sun size={20} />}
-            Theme
-          </h3>
-          <div className="flex gap-4">
-            <button
-              onClick={() => !isDark && toggleTheme()}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
-                !isDark
-                  ? 'bg-indigo-600 text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <Sun size={18} className="mx-auto mb-1" />
-              Light
-            </button>
-            <button
-              onClick={() => isDark || toggleTheme()}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
-                isDark
-                  ? 'bg-indigo-600 text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <Moon size={18} className="mx-auto mb-1" />
-              Dark
-            </button>
-          </div>
-          <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">Choose your preferred color scheme</p>
         </div>
 
         {/* Currency Section */}

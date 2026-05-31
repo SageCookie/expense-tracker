@@ -5,6 +5,7 @@ import Button from '../components/Button'
 import Input from '../components/Input'
 import Card from '../components/Card'
 import Alert from '../components/Alert'
+import Navbar from '../components/Navbar'
 import { authAPI } from '../services/api'
 
 export default function Register({ setIsAuthenticated }) {
@@ -38,7 +39,8 @@ export default function Register({ setIsAuthenticated }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <Navbar />
+      <div className="w-full max-w-md mt-20">
         <Card className="shadow-2xl bg-white dark:bg-gray-800 border-0">
           {/* Header */}
           <div className="text-center mb-8">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, Plus, Trash2, Settings } from 'lucide-react'
+import { LogOut, Plus, Trash2, Settings, Sun, Moon } from 'lucide-react'
 import Button from '../components/Button'
 import Card from '../components/Card'
 import Modal from '../components/Modal'
@@ -10,6 +10,7 @@ import SettingsComponent from '../components/Settings'
 import { PieChartComponent } from '../components/Charts'
 import { expenseAPI, authAPI } from '../services/api'
 import { useCurrency } from '../context/CurrencyContext'
+import { useTheme } from '../context/ThemeContext'
 
 const CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Bills', 'Other']
 const categoryColors = {
@@ -23,6 +24,7 @@ const categoryColors = {
 export default function Dashboard({ setIsAuthenticated }) {
   const navigate = useNavigate()
   const { getCurrencySymbol } = useCurrency()
+  const { isDark, toggleTheme } = useTheme()
   const [expenses, setExpenses] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -121,6 +123,17 @@ export default function Dashboard({ setIsAuthenticated }) {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-gray-700 dark:text-gray-300 font-medium">{user.name}</span>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? (
+                <Sun size={20} className="text-yellow-500" />
+              ) : (
+                <Moon size={20} className="text-indigo-600" />
+              )}
+            </button>
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
