@@ -28,11 +28,12 @@ const registerUser = async (req, res) => {
 
         // 4. Generate token and send success response
         if (user) {
-            generateToken(res, user._id);
+            const token = generateToken(res, user._id);
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                token,
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -52,11 +53,12 @@ const authUser = async (req, res) => {
 
         // 2. Check if user exists AND password matches the hashed password
         if (user && (await bcrypt.compare(password, user.password))) {
-            generateToken(res, user._id);
+            const token = generateToken(res, user._id);
             res.status(200).json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                token,
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
@@ -77,5 +79,4 @@ const logoutUser = (req, res) => {
     res.status(200).json({ message: 'User logged out successfully' });
 };
 
-// Make sure you update the export at the bottom to include all three!
 export { registerUser, authUser, logoutUser };

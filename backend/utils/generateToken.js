@@ -1,18 +1,18 @@
 import jwt from 'jsonwebtoken';
 
 const generateToken = (res, userId) => {
-    // 1. Create the JWT digital ID card
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-        expiresIn: '30d',
-    });
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET || 'secret_key', {
+    expiresIn: '7d',
+  });
 
-    // 2. Hide that ID card inside an HTTP-Only Cookie
-    res.cookie('jwt', token, {
-        httpOnly: true, // Prevents XSS attacks (client-side JS can't see it)
-        secure: process.env.NODE_ENV !== 'development', // Uses HTTPS in production
-        sameSite: 'strict', // Prevents CSRF attacks
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
-    });
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  return token;
 };
 
 export default generateToken;
