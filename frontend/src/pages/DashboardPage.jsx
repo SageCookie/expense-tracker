@@ -39,8 +39,18 @@ export default function DashboardPage({ setIsAuthenticated }) {
   const fetchExpenses = async () => {
     try {
       const response = await expenseAPI.getAll()
-      const expensesData = response.data?.expenses ?? response.data ?? []
-      setExpenses(Array.isArray(expensesData) ? expensesData : [])
+      
+      // Safely dig into the response object to find the actual array
+      let extractedExpenses = [];
+      if (Array.isArray(response.data)) {
+        extractedExpenses = response.data;
+      } else if (response.data?.expenses && Array.isArray(response.data.expenses)) {
+        extractedExpenses = response.data.expenses;
+      } else if (response.data?.data?.expenses && Array.isArray(response.data.data.expenses)) {
+        extractedExpenses = response.data.data.expenses;
+      }
+
+      setExpenses(extractedExpenses);
     } catch (err) {
       setError('Failed to fetch expenses')
     } finally {
@@ -91,13 +101,32 @@ export default function DashboardPage({ setIsAuthenticated }) {
     }
   }
 
-  const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
+const totalSpent = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0)
+  
   const categoryTotals = CATEGORIES.map((cat) => ({
     name: cat,
     value: expenses
       .filter((exp) => exp.category === cat)
-      .reduce((sum, exp) => sum + exp.amount, 0),
+      .reduce((sum, exp) => sum + (exp.amount || 0), 0),
   })).filter((item) => item.value > 0)
+
+  // 2. THIS FIXES THE CRASH: Define the missing variables for the UI
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const thisMonthExpenses = expenses.filter((exp) => {
+    // Fallback to createdAt if your backend uses that instead of date
+    const expDate = new Date(exp.date || exp.createdAt);
+    return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+  });
+
+  const thisMonthTotal = thisMonthExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+
+  // Sort by newest first, then grab the top 5
+  const recentExpenses = [...expenses]
+    .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt))
+    .slice(0, 5);
 
   if (loading) {
     return (
