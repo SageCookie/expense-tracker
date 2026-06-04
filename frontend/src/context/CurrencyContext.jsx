@@ -18,7 +18,7 @@ const CURRENCIES = [
 export function CurrencyProvider({ children }) {
   const [currency, setCurrency] = useState(() => {
     const saved = localStorage.getItem('currency')
-    return saved || 'USD'
+    return saved || 'INR'
   })
 
   const getCurrencySymbol = () => {

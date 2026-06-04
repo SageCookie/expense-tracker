@@ -5,7 +5,12 @@ import { CurrencyProvider } from './context/CurrencyContext'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
+import DashboardPage from './pages/DashboardPage'
+import TransactionHistoryPage from './pages/TransactionHistoryPage'
+import AnalyticsPage from './pages/AnalyticsPage'
+import BudgetPage from './pages/BudgetPage'
+import ProfilePage from './pages/ProfilePage'
+import SettingsPage from './pages/SettingsPage'
 import './index.css'
 
 function AppContent() {
@@ -37,7 +42,14 @@ function AppContent() {
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register setIsAuthenticated={setIsAuthenticated} />} />
-        <Route path="/dashboard" element={isAuthenticated ? <Dashboard setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />
+        
+        {/* Protected dashboard routes */}
+        <Route path="/dashboard" element={isAuthenticated ? <DashboardPage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />
+        <Route path="/history" element={isAuthenticated ? <TransactionHistoryPage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />
+        <Route path="/analytics" element={isAuthenticated ? <AnalyticsPage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />
+        <Route path="/budget" element={isAuthenticated ? <BudgetPage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />
+        <Route path="/profile" element={isAuthenticated ? <ProfilePage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />
+        <Route path="/settings" element={isAuthenticated ? <SettingsPage setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   )

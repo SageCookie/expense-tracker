@@ -19,10 +19,12 @@ export const authAPI = {
 }
 
 export const expenseAPI = {
-  getAll: () => API.get('/expenses'),
+  getAll: (params) => API.get('/expenses', { params }),
   create: (data) => API.post('/expenses', data),
   update: (id, data) => API.put(`/expenses/${id}`, data),
   delete: (id) => API.delete(`/expenses/${id}`),
+  getSummary: () => API.get('/expenses/summary'),
+  getAnalytics: () => API.get('/expenses/analytics'),
 }
 
 export default API

@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, Plus, Trash2, Settings, Sun, Moon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Trash2, TrendingUp, Eye } from 'lucide-react'
 import Button from '../components/Button'
 import Card from '../components/Card'
 import Modal from '../components/Modal'
 import Alert from '../components/Alert'
 import Input from '../components/Input'
-import SettingsComponent from '../components/Settings'
 import { PieChartComponent } from '../components/Charts'
 import { expenseAPI, authAPI } from '../services/api'
 import { useCurrency } from '../context/CurrencyContext'
-import { useTheme } from '../context/ThemeContext'
+import MainLayout from '../components/layout/MainLayout'
 
 const CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Bills', 'Other']
 const categoryColors = {
@@ -21,13 +20,11 @@ const categoryColors = {
   Other: '#10b981',
 }
 
-export default function Dashboard({ setIsAuthenticated }) {
+export default function DashboardPage({ setIsAuthenticated }) {
   const navigate = useNavigate()
   const { getCurrencySymbol } = useCurrency()
-  const { isDark, toggleTheme } = useTheme()
   const [expenses, setExpenses] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [formData, setFormData] = useState({ amount: '', category: 'Food', description: '' })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -104,94 +101,108 @@ export default function Dashboard({ setIsAuthenticated }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading expenses...</p>
+      <MainLayout user={user} onLogout={handleLogout}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold">H</div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hisaab</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-700 dark:text-gray-300 font-medium">{user.name}</span>
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDark ? (
-                <Sun size={20} className="text-yellow-500" />
-              ) : (
-                <Moon size={20} className="text-indigo-600" />
-              )}
-            </button>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              title="Settings"
-            >
-              <Settings size={20} className="text-gray-600 dark:text-gray-400" />
-            </button>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut size={18} className="inline mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <MainLayout user={user} onLogout={handleLogout}>
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         {error && <Alert message={error} type="error" onClose={() => setError('')} />}
         {success && <Alert message={success} type="success" onClose={() => setSuccess('')} />}
 
+        {/* Welcome & Quick Actions */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Welcome, {user.name || 'User'}!
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Here's your spending overview at a glance
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+              <Plus size={18} className="inline mr-2" />
+              Add Expense
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/history')}>
+              <Eye size={18} className="inline mr-2" />
+              View History
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/analytics')}>
+              <TrendingUp size={18} className="inline mr-2" />
+              Analytics
+            </Button>
+          </div>
+        </div>
+
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white dark:bg-gray-800">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Spent</h3>
-            <p className="text-3xl font-bold text-primary mt-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-0">
+            <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium">Total Spent</h3>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
               {symbol}{totalSpent.toFixed(2)}
             </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">All time</p>
           </Card>
-          <Card className="bg-white dark:bg-gray-800">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Expenses</h3>
-            <p className="text-3xl font-bold text-secondary mt-2">{expenses.length}</p>
-          </Card>
-          <Card className="bg-white dark:bg-gray-800">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Average Expense</h3>
-            <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">
-              {symbol}{expenses.length > 0 ? (totalSpent / expenses.length).toFixed(2) : '0.00'}
+
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border-0">
+            <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium">This Month</h3>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+              {symbol}{thisMonthTotal.toFixed(2)}
             </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">{thisMonthExpenses.length} transactions</p>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-0">
+            <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium">Total Transactions</h3>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{expenses.length}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">Average: {symbol}{expenses.length > 0 ? (totalSpent / expenses.length).toFixed(2) : '0.00'}</p>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 border-0">
+            <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium">Top Category</h3>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+              {categoryTotals[0]?.name || 'N/A'}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">{symbol}{(categoryTotals[0]?.value || 0).toFixed(2)}</p>
           </Card>
         </div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Expenses List */}
+          {/* Recent Expenses */}
           <div className="lg:col-span-2">
             <Card className="bg-white dark:bg-gray-800">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Expenses</h2>
-                <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
-                  <Plus size={18} className="inline mr-2" />
-                  Add Expense
-                </Button>
+                {expenses.length > 5 && (
+                  <button
+                    onClick={() => navigate('/history')}
+                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium"
+                  >
+                    View All
+                  </button>
+                )}
               </div>
 
-              {expenses.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-8">No expenses yet. Start by adding one!</p>
+              {recentExpenses.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">No expenses yet. Start by adding one!</p>
+                  <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
+                    <Plus size={18} className="inline mr-2" />
+                    Add Expense
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-3">
-                  {expenses.map((expense) => (
+                  {recentExpenses.map((expense) => (
                     <div key={expense._id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
@@ -201,12 +212,19 @@ export default function Dashboard({ setIsAuthenticated }) {
                           ></div>
                           <div>
                             <p className="font-medium text-gray-900 dark:text-white">{expense.category}</p>
-                            {expense.description && <p className="text-sm text-gray-600 dark:text-gray-400">{expense.description}</p>}
+                            {expense.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{expense.description}</p>
+                            )}
+                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                              {new Date(expense.date).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <p className="text-lg font-bold text-gray-900 dark:text-white">{symbol}{expense.amount.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-gray-900 dark:text-white">
+                          {symbol}{expense.amount.toFixed(2)}
+                        </p>
                         <button
                           onClick={() => handleDeleteExpense(expense._id)}
                           className="text-red-500 hover:text-red-700 dark:hover:text-red-400 transition"
@@ -221,15 +239,25 @@ export default function Dashboard({ setIsAuthenticated }) {
             </Card>
           </div>
 
-          {/* Charts */}
+          {/* Category Breakdown */}
           {categoryTotals.length > 0 && (
             <Card className="bg-white dark:bg-gray-800">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">By Category</h2>
               <PieChartComponent data={categoryTotals} />
+              <div className="mt-6 space-y-2 text-sm">
+                {categoryTotals.map((cat) => (
+                  <div key={cat.name} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                    <span className="text-gray-700 dark:text-gray-300">{cat.name}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {symbol}{cat.value.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </Card>
           )}
         </div>
-      </main>
+      </div>
 
       {/* Add Expense Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Expense">
@@ -270,9 +298,6 @@ export default function Dashboard({ setIsAuthenticated }) {
           </Button>
         </form>
       </Modal>
-
-      {/* Settings Modal */}
-      <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-    </div>
+    </MainLayout>
   )
 }
