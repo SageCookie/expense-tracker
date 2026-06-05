@@ -1,312 +1,259 @@
 # Deployment Guide
 
-## Overview
-
-This guide covers deploying both the backend and frontend to production.
+Deploy **Hisaab** (Expense Tracker) with a React frontend, Express API, MongoDB Atlas, and an email provider for verification codes.
 
 ## Architecture
 
 ```
-┌─────────────────┐
-│   React App     │
-│ (Vercel/Netlify)│
-└────────┬────────┘
-         │ API calls
-         ↓
-┌─────────────────┐
-│  Express.js     │
-│ (Vercel/Render) │
-└────────┬────────┘
-         │ Database
-         ↓
-┌─────────────────┐
-│  MongoDB Atlas  │
-│   (Cloud DB)    │
-└─────────────────┘
+┌──────────────────────┐
+│   React (Vite)       │  Vercel / Netlify
+│   Static frontend    │
+└──────────┬───────────┘
+           │ HTTPS  VITE_API_URL
+           ▼
+┌──────────────────────┐
+│   Express API        │  Render / Railway / Vercel
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐     ┌──────────────────────┐
+│   MongoDB Atlas      │     │ Resend or SMTP       │
+│   (database)         │     │ (verification email) │
+└──────────────────────┘     └──────────────────────┘
 ```
 
 ## Prerequisites
 
-1. GitHub account
-2. Production database:
-   - MongoDB Atlas account (free tier available)
-3. Deployment platforms:
-   - **Backend**: Vercel, Render, or Heroku
-   - **Frontend**: Vercel, Netlify
+1. GitHub repository with this project
+2. **MongoDB Atlas** cluster (free M0 tier is fine)
+3. **Email provider** (required in production):
+   - [Resend](https://resend.com) — recommended; one API key
+   - Or Gmail SMTP with an [App Password](https://myaccount.google.com/apppasswords)
+4. Hosting:
+   - **Backend:** Render (recommended for long-running Node) or Railway
+   - **Frontend:** Vercel or Netlify
 
-## Step 1: Database Setup (MongoDB Atlas)
+---
 
-### Create MongoDB Atlas Account
+## Step 1: MongoDB Atlas
 
-1. Go to https://www.mongodb.com/cloud/atlas
-2. Sign up for free
-3. Create a new project
-4. Create a free M0 cluster
-5. Add IP address: `0.0.0.0/0` (allow all for development, restrict in production)
-6. Create database user with strong password
-7. Get connection string:
-   ```
-   mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/expense-tracker?retryWrites=true&w=majority
-   ```
+1. Create a cluster at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+2. Database Access → create a user with read/write on your database
+3. Network Access → allow your deployment IPs (or `0.0.0.0/0` only while testing; restrict later)
+4. Connect → Drivers → copy connection string:
 
-## Step 2: Backend Deployment (Vercel or Render)
+```
+mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/expense-tracker?retryWrites=true&w=majority
+```
 
-### Option A: Deploy with Vercel
+Use this as `MONGO_URI` in production.
 
-1. **Create Vercel Account**
-   - Go to https://vercel.com
-   - Sign up with GitHub
+---
 
-2. **Add Environment Variables to `.env.production`**
-   ```
-   MONGO_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/expense-tracker?retryWrites=true&w=majority
-   JWT_SECRET=your-strong-secret-key-min-32-chars
-   NODE_ENV=production
-   ```
+## Step 2: Email (required)
 
-3. **Create `vercel.json` in backend root:**
-   ```json
-   {
-     "version": 2,
-     "builds": [
-       {
-         "src": "server.js",
-         "use": "@vercel/node"
-       }
-     ],
-     "routes": [
-       {
-         "src": "/(.*)",
-         "dest": "server.js"
-       }
-     ]
-   }
-   ```
+Verification codes are sent for **registration**, **password change**, and **account deletion**. Without email config, those flows return errors.
 
-4. **Deploy**
-   - Push to GitHub
-   - Go to https://vercel.com/new
-   - Import your repository
-   - Select `backend` folder as root directory
-   - Add environment variables from step 2
-   - Deploy
+### Option A — Resend
 
-5. **Get Backend URL**: `https://your-backend.vercel.app`
+1. Sign up at [resend.com](https://resend.com)
+2. Create an API key
+3. For production, [verify your domain](https://resend.com/docs/dashboard/domains/introduction) or use `onboarding@resend.dev` (free tier: limited recipients)
 
-### Option B: Deploy with Render
+```env
+RESEND_API_KEY=re_xxxxxxxxxxxx
+RESEND_FROM=Hisaab <onboarding@resend.dev>
+```
 
-1. **Create Render Account**
-   - Go to https://render.com
-   - Sign up with GitHub
+### Option B — Gmail SMTP
 
-2. **Create New Web Service**
-   - Connect GitHub repository
-   - Select `backend` directory
-   - Environment: Node
-   - Build Command: `npm install`
-   - Start Command: `npm start`
+1. Enable 2-Step Verification on Google Account
+2. Create an App Password (not your normal Gmail password)
+3. Set:
 
-3. **Add Environment Variables**
-   ```
-   MONGO_URI=mongodb+srv://username:password@...
-   JWT_SECRET=your-strong-secret-key
-   NODE_ENV=production
-   ```
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your.email@gmail.com
+SMTP_PASS=xxxx-xxxx-xxxx-xxxx
+SMTP_FROM=Hisaab <your.email@gmail.com>
+```
 
-4. **Deploy** - Render will auto-deploy on push
+After deploy, check backend logs for `✓ Email delivery ready` on startup.
 
-## Step 3: Frontend Deployment (Vercel or Netlify)
+---
 
-### Option A: Deploy with Vercel (Recommended)
+## Step 3: Backend deployment (Render)
 
-1. **Create `vercel.json` in frontend root:**
-   ```json
-   {
-     "buildCommand": "npm run build",
-     "outputDirectory": "dist",
-     "framework": "vite"
-   }
-   ```
+Render suits Express apps that listen on a port (better than serverless for this project).
 
-2. **Deploy**
-   - Go to https://vercel.com/new
-   - Import your repository
-   - Select `frontend` folder as root directory
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-   - Add environment variable:
-     ```
-     VITE_API_URL=https://your-backend.vercel.app/api
-     ```
-   - Deploy
+1. [render.com](https://render.com) → New → **Web Service**
+2. Connect GitHub repo
+3. **Root directory:** `backend`
+4. **Build command:** `npm install`
+5. **Start command:** `npm start`
+6. **Environment variables:**
 
-3. **Get Frontend URL**: `https://your-frontend.vercel.app`
+| Key | Value |
+|-----|--------|
+| `MONGO_URI` | Atlas connection string |
+| `JWT_SECRET` | Long random string (32+ chars) |
+| `NODE_ENV` | `production` |
+| `RESEND_API_KEY` | (or full SMTP block) |
+| `RESEND_FROM` | Verified sender |
 
-### Option B: Deploy with Netlify
+7. Deploy → note URL, e.g. `https://hisaab-api.onrender.com`
 
-1. **Connect GitHub to Netlify**
-   - Go to https://netlify.com
-   - Sign up with GitHub
-   - New site from Git → Select repository
+### Health check
 
-2. **Configure Build Settings**
-   - Base directory: `frontend`
-   - Build command: `npm run build`
-   - Publish directory: `dist`
+Open `https://your-api.onrender.com/` — should return `Expense Tracker API is running...`
 
-3. **Add Environment Variables**
-   - Site settings → Build & deploy → Environment
-   - Add `VITE_API_URL=https://your-backend.vercel.app/api`
+---
 
-4. **Deploy** - Netlify will auto-deploy on push
+## Step 4: Frontend deployment (Vercel)
 
-## Step 4: Update Frontend API URL
+1. [vercel.com](https://vercel.com) → Import repo
+2. **Root directory:** `frontend`
+3. **Framework preset:** Vite
+4. **Build command:** `npm run build`
+5. **Output directory:** `dist`
+6. **Environment variable:**
+
+```
+VITE_API_URL=https://your-api.onrender.com/api
+```
+
+7. Deploy → note URL, e.g. `https://hisaab.vercel.app`
+
+### Wire API URL in code
 
 Update `frontend/src/services/api.js`:
 
 ```javascript
 const API = axios.create({
-  baseURL: process.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
 })
 ```
 
-Or update for production:
+Redeploy frontend after this change if it was not already set.
+
+---
+
+## Step 5: CORS (production)
+
+Update `backend/server.js` so only your frontend origin can call the API:
 
 ```javascript
-const API_URL = process.env.VITE_API_URL || 'https://your-backend.vercel.app/api'
-const API = axios.create({
-  baseURL: API_URL,
-})
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 ```
 
-## Step 5: Configure CORS (Backend)
+Set on the backend:
 
-Update `backend/server.js` for production:
-
-```javascript
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://your-frontend.vercel.app',
-    'https://your-frontend.netlify.app',
-  ],
-  credentials: true,
-}))
+```env
+FRONTEND_URL=https://your-frontend.vercel.app
 ```
 
-## Step 6: Production Security Checklist
+---
 
-- [ ] **Environment Variables**
-  - [ ] JWT_SECRET is strong (min 32 chars, random)
-  - [ ] MONGO_URI is from MongoDB Atlas
-  - [ ] NODE_ENV is set to 'production'
+## Step 6: Production checklist
 
-- [ ] **Database**
-  - [ ] IP whitelist is restricted (not 0.0.0.0/0)
-  - [ ] Database user has minimal permissions
-  - [ ] Backups are enabled
+### Environment
+- [ ] `JWT_SECRET` is unique and strong
+- [ ] `MONGO_URI` points to Atlas (not localhost)
+- [ ] Email configured (`RESEND_API_KEY` or SMTP)
+- [ ] `FRONTEND_URL` set for CORS
+- [ ] `VITE_API_URL` set on frontend host
 
-- [ ] **API**
-  - [ ] CORS is properly configured
-  - [ ] Rate limiting is enabled
-  - [ ] Input validation is in place
-  - [ ] Error messages don't leak sensitive info
+### Security
+- [ ] Atlas IP allowlist restricted where possible
+- [ ] No `.env` files committed to Git
+- [ ] HTTPS on both frontend and API
 
-- [ ] **Frontend**
-  - [ ] API calls use HTTPS
-  - [ ] Tokens are stored securely (httpOnly cookies preferred)
-  - [ ] Sensitive data is not logged
-  - [ ] Build is optimized (minified, tree-shaken)
+### Functional smoke test
+- [ ] Register new user → receive email code → complete signup
+- [ ] Login → add expense → view dashboard & history
+- [ ] Analytics loads (empty state with no data; charts with data)
+- [ ] Settings → change password (email code)
+- [ ] Budget → create custom category
 
-- [ ] **SSL/TLS**
-  - [ ] HTTPS is enforced
-  - [ ] Certificates are valid
-
-## Monitoring & Maintenance
-
-### Logs
-
-**Backend (Vercel):**
-- Dashboard → Deployments → Logs
-
-**Backend (Render):**
-- Service Dashboard → Logs
-
-**Frontend (Vercel):**
-- Dashboard → Deployments → Logs
-
-### Scaling
-
-**When to Scale:**
-- Database: Upgrade MongoDB Atlas tier if nearing storage/CPU limits
-- Backend: Increase concurrency/resources if requests slow
-- Frontend: Already static, minimal scaling needs
-
-### Backups
-
-- MongoDB Atlas: Enable automated backups (35-day retention free tier)
-- GitHub: Your code is already backed up
+---
 
 ## Troubleshooting
 
-### Frontend can't connect to backend
+### Verification email not received
 
-1. Check `VITE_API_URL` is set correctly
-2. Verify CORS is enabled on backend
-3. Check network tab in browser DevTools
-4. Ensure backend is running and accessible
+1. Confirm backend log shows `✓ Email delivery ready`
+2. Check spam folder
+3. Resend free tier: may only send to verified addresses until domain is verified
+4. Gmail: must use App Password, not account password
 
-### Authentication not working
+### Frontend cannot reach API
 
-1. Check JWT_SECRET is the same in dev and production
-2. Verify token is being sent in Authorization header
-3. Check token expiration (7 days)
+1. `VITE_API_URL` must include `/api` suffix and use `https://`
+2. CORS `FRONTEND_URL` must match exact frontend origin (no trailing slash)
+3. Browser DevTools → Network tab for failed requests
 
-### Database connection errors
+### Authentication fails after deploy
 
-1. Verify MONGO_URI is correct
-2. Check IP whitelist includes deployment server IP
-3. Verify database user credentials
-4. Check cluster status in MongoDB Atlas
+1. Same `JWT_SECRET` across redeploys (changing it invalidates old tokens)
+2. Token sent as `Authorization: Bearer <token>` from `localStorage`
+
+### MongoDB connection errors
+
+1. Verify username/password in `MONGO_URI` (URL-encode special characters)
+2. Atlas Network Access allows Render outbound IPs
+3. Cluster is running (not paused on free tier)
+
+### Analytics blank page
+
+Fixed in current version: empty users see “No expenses yet” instead of a crash. Ensure latest frontend is deployed.
 
 ### Build failures
 
-1. Run `npm install` locally
-2. Run `npm run build` to check for errors
-3. Fix any missing dependencies
-4. Push changes and redeploy
+```bash
+cd frontend && npm install && npm run build
+cd backend && npm install && npm start
+```
 
-## Cost Estimation (Monthly)
+Fix errors locally, push, redeploy.
 
-| Service | Free Tier | Paid Tier | Notes |
-|---------|-----------|-----------|-------|
-| MongoDB Atlas | ✓ | $0-$500+ | 512MB free, sufficient for small apps |
-| Vercel (Backend) | ✗ | $10+ | Pay-as-you-go for serverless |
-| Vercel (Frontend) | ✓ | $10+ | Unlimited deployments |
-| Render (Backend) | ✓ | $7+ | 750 hours free tier |
-| Netlify (Frontend) | ✓ | Free | More than enough for this app |
+---
 
-## Rollback Procedure
+## Cost estimate (monthly)
 
-### Vercel/Netlify
-1. Go to Deployments
-2. Select previous deployment
-3. Click "Promote to Production"
+| Service | Free tier | Notes |
+|---------|-----------|--------|
+| MongoDB Atlas M0 | Yes | 512 MB storage |
+| Render Web Service | Yes* | Free tier spins down; cold starts |
+| Vercel (frontend) | Yes | Hobby tier sufficient |
+| Resend | Yes | Limited sends; domain verification for production |
+| Netlify (frontend alt.) | Yes | Alternative to Vercel |
 
-### Render
-1. Go to Deployments
-2. Select previous build
-3. Click "Deploy" to rollback
+---
 
-## Next Steps for Production
+## Rollback
 
-1. Add email verification on registration
-2. Implement password reset functionality
-3. Add expense categories management
-4. Add expense filters (date range, category)
-5. Add export to CSV/PDF
-6. Implement recurring expenses
-7. Add push notifications
-8. Setup error tracking (Sentry)
-9. Add analytics (Google Analytics)
-10. Implement backup & restore functionality
+- **Vercel / Netlify:** Deployments → previous deployment → Promote to production
+- **Render:** Manual deploy from earlier commit or rollback in dashboard
+
+---
+
+## Optional improvements
+
+- Custom domain + SSL on Vercel/Render
+- Rate limiting on auth routes (e.g. `express-rate-limit`)
+- Error monitoring (Sentry)
+- CI/CD GitHub Actions for test + deploy on push
+
+For local development and API details, see [README.md](./README.md).

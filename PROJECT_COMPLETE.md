@@ -1,311 +1,220 @@
-# 🎉 Expense Tracker - Project Complete!
+# Hisaab — Expense Tracker — Project Complete
 
-A modern, minimal web application for tracking and managing expenses. Built with React, Tailwind CSS, Express.js, and MongoDB.
+A full-stack expense tracking application with authentication, email verification, multi-page dashboard, analytics, budgets, and modern UI.
 
-## ✅ Project Status: 100% Complete
-
-**Last Updated:** May 31, 2026
-**Total Development Time:** ~3 hours
-**Lines of Code:** ~2,500+
+**Last updated:** June 2026  
+**Status:** Production-ready (with email + MongoDB configured)
 
 ---
 
-## 📊 Completion Summary
+## Completion summary
 
-| Phase | Status | Tasks Completed |
-|-------|--------|------------------|
-| 🎨 Frontend Foundation | ✅ Done | 1. Setup Vite+React<br>2. Reusable components (6 components)<br>3. Auth pages (Login/Register)<br>4. Dashboard with full UI |
-| 🔌 Backend APIs | ✅ Done | 1. Auth middleware + JWT<br>2. Expense CRUD endpoints (5 routes)<br>3. Zod validation<br>4. Authorization checks |
-| 🔗 Integration & UI | ✅ Done | 1. API service layer<br>2. Frontend-backend integration<br>3. Charts & visualization<br>4. Modern Tailwind design |
-| 📚 Documentation & Testing | ✅ Done | 1. Comprehensive README<br>2. Testing guide (20+ test scenarios)<br>3. Deployment guide (Vercel/Render/Netlify)<br>4. Architecture diagrams |
-
----
-
-## 🎯 What's Included
-
-### Frontend (React + Vite + Tailwind)
-- **Pages:** Login, Register, Dashboard
-- **Components:** Button, Input, Card, Modal, Alert, Charts
-- **Features:**
-  - Responsive design (mobile, tablet, desktop)
-  - Real-time expense tracking
-  - Category-based breakdown with pie charts
-  - Smooth animations and transitions
-  - Error handling and validation
-  - Loading states
-  - Modern gradient UI
-
-### Backend (Express.js + MongoDB)
-- **Authentication:** JWT-based with bcrypt password hashing
-- **API Endpoints:**
-  - User: Register, Login, Logout
-  - Expenses: GET, POST, PUT, DELETE
-  - Summary: Statistics endpoint
-- **Features:**
-  - Route protection with auth middleware
-  - User data isolation
-  - Comprehensive error handling
-  - Zod schema validation
-  - CORS enabled
-  - Rate-ready structure
-
-### Database (MongoDB)
-- User model with email uniqueness
-- Expense model with relational references
-- Timestamps on all records
-- Category enum validation
+| Area | Status | Highlights |
+|------|--------|------------|
+| Frontend | Done | 10+ pages, layout system, dark mode, charts, filters, pagination |
+| Backend | Done | Auth, email verification, expense CRUD, analytics API |
+| Database | Done | Users, expenses, email verification records |
+| Email | Done | Resend + SMTP; codes for register / password / delete |
+| Documentation | Done | README, DEPLOYMENT, TESTING, this file |
 
 ---
 
-## 📁 Project Structure
+## Implemented features
+
+### Authentication & security
+- Register with **email verification** (6-digit code, 15 min expiry)
+- Login / logout with JWT
+- Change password (current password + email code)
+- Delete account (password + email code + type DELETE)
+- bcrypt password hashing, protected routes, Zod validation
+
+### Expense tracking
+- Dashboard overview with stats and recent expenses
+- **Transaction history** — sort, filter (date, category, amount, search), pagination, CSV export, inline edit/delete
+- Add expenses with default or **custom categories**
+- Per-user data isolation
+
+### Analytics & budget
+- **Analytics** — summary cards, pie/bar/line charts, insights, report export
+- **Empty state** when user has no expenses (no blank crash)
+- **Budget** — per-category limits, progress bars, overspend warnings
+- **Custom categories** — create/remove from Budget page (stored in `localStorage`)
+
+### Settings & UX
+- **Currency** — dedicated Settings tab (display symbol across app)
+- **Theme** — dark/light toggle on landing + dashboard navbar
+- **Profile** — user spending summary
+- Responsive sidebar + mobile bottom navigation
+- Landing page for unauthenticated users
+
+---
+
+## Tech stack
+
+| Layer | Stack |
+|-------|--------|
+| Frontend | React 18, Vite 5, Tailwind CSS 3, React Router 6, Axios, Recharts, Lucide |
+| Backend | Express 5, Mongoose 9, JWT, bcrypt, Zod, Nodemailer, Resend SDK |
+| Database | MongoDB / MongoDB Atlas |
+
+---
+
+## Project structure
 
 ```
 expense-tracker/
 ├── backend/
 │   ├── controllers/
-│   │   ├── userController.js       # Auth logic
-│   │   └── expenseController.js    # CRUD operations
+│   │   ├── userController.js
+│   │   └── expenseController.js
 │   ├── models/
-│   │   ├── User.js                 # User schema
-│   │   └── Expense.js              # Expense schema
+│   │   ├── User.js
+│   │   ├── Expense.js
+│   │   └── EmailVerification.js
 │   ├── routes/
-│   │   ├── userRoutes.js           # Auth endpoints
-│   │   └── expenseRoutes.js        # Expense endpoints
-│   ├── middleware/
-│   │   └── authMiddleware.js       # JWT verification
+│   │   ├── userRoutes.js
+│   │   └── expenseRoutes.js
+│   ├── middleware/authMiddleware.js
 │   ├── utils/
-│   │   ├── DB.js                   # MongoDB connection
-│   │   └── generateToken.js        # JWT generation
-│   ├── server.js                   # Main server file
-│   ├── package.json
+│   │   ├── DB.js
+│   │   ├── generateToken.js
+│   │   ├── sendEmail.js
+│   │   └── verificationHelpers.js
+│   ├── server.js
 │   └── .env.example
 │
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Button.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── Card.jsx
-│   │   │   ├── Modal.jsx
-│   │   │   ├── Alert.jsx
-│   │   │   └── Charts.jsx
-│   │   ├── pages/
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   └── Dashboard.jsx
-│   │   ├── services/
-│   │   │   └── api.js              # Axios setup with interceptors
-│   │   ├── App.jsx                 # Main app with routing
-│   │   ├── main.jsx                # React entry point
-│   │   └── index.css               # Global styles
-│   ├── public/
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   ├── package.json
-│   └── .env.example
+├── frontend/src/
+│   ├── components/
+│   │   ├── layout/          # MainLayout, Sidebar, Navbar, BottomNav
+│   │   ├── Button, Input, Card, Modal, Alert, Charts
+│   │   ├── FilterPanel, TransactionTable, PaginationBar
+│   ├── pages/
+│   │   ├── Landing.jsx
+│   │   ├── Login.jsx, Register.jsx
+│   │   ├── DashboardPage.jsx
+│   │   ├── TransactionHistoryPage.jsx
+│   │   ├── AnalyticsPage.jsx
+│   │   ├── BudgetPage.jsx
+│   │   ├── ProfilePage.jsx
+│   │   └── SettingsPage.jsx
+│   ├── context/             # ThemeContext, CurrencyContext
+│   ├── services/api.js
+│   └── utils/categories.js
 │
-├── README.md                       # Main project documentation
-├── TESTING.md                      # Testing guide (20+ scenarios)
-├── DEPLOYMENT.md                   # Production deployment guide
-└── .gitignore
+├── README.md
+├── DEPLOYMENT.md
+├── TESTING.md
+└── PROJECT_COMPLETE.md
 ```
 
 ---
 
-## 🚀 Quick Start
+## API overview
 
-### Prerequisites
-- Node.js 16+
-- MongoDB (local or MongoDB Atlas)
+### Public
+- `POST /api/users` — start registration (sends email)
+- `POST /api/users/register/confirm` — complete registration
+- `POST /api/users/login`
+- `POST /api/users/logout`
 
-### Backend
+### Protected (Bearer token)
+- `POST /api/users/password/request-verification`
+- `POST /api/users/password/confirm`
+- `POST /api/users/delete/request-verification`
+- `POST /api/users/delete/confirm`
+- `GET|POST|PUT|DELETE /api/expenses` (+ query filters)
+- `GET /api/expenses/summary`
+- `GET /api/expenses/analytics`
+
+---
+
+## Quick start
+
 ```bash
-cd backend
-npm install
+# Backend
+cd backend && npm install
+cp .env.example .env
+# Set MONGO_URI, JWT_SECRET, RESEND_API_KEY (or SMTP)
+npm run dev
 
-# Create .env file
-echo "MONGO_URI=mongodb://localhost:27017/expense-tracker" > .env
-echo "JWT_SECRET=test-secret-key" >> .env
-echo "PORT=5000" >> .env
-echo "NODE_ENV=development" >> .env
-
-npm run dev  # Server on http://localhost:5000
+# Frontend (new terminal)
+cd frontend && npm install
+npm run dev
 ```
 
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev  # App on http://localhost:5173
-```
+- API: `http://localhost:5000`
+- App: `http://localhost:5173`
 
 ---
 
-## 📋 API Reference
+## Environment variables (backend)
 
-### Authentication
-- `POST /api/users` - Register
-- `POST /api/users/login` - Login
-- `POST /api/users/logout` - Logout
+| Variable | Purpose |
+|----------|---------|
+| `MONGO_URI` | MongoDB connection |
+| `JWT_SECRET` | JWT signing |
+| `PORT` | Server port (default 5000) |
+| `RESEND_API_KEY` | Email via Resend |
+| `RESEND_FROM` | Sender address |
+| `SMTP_*` | Alternative Gmail/SMTP |
 
-### Expenses (Protected)
-- `GET /api/expenses` - Get all expenses
-- `POST /api/expenses` - Create expense
-- `PUT /api/expenses/:id` - Update expense
-- `DELETE /api/expenses/:id` - Delete expense
-- `GET /api/expenses/summary` - Get statistics
-
----
-
-## 🧪 Testing
-
-Comprehensive testing guide included with:
-- ✅ 20+ test scenarios
-- ✅ CURL examples for each endpoint
-- ✅ Authorization tests
-- ✅ Validation tests
-- ✅ UI testing checklist
-- ✅ Performance benchmarks
-
-See `TESTING.md` for details.
+See `backend/.env.example` for full template.
 
 ---
 
-## 🌐 Deployment
+## Design
 
-### One-Click Deployment Options
-
-**Backend:**
-- ✅ Vercel (Recommended - free tier)
-- ✅ Render (Free tier with 750 hours/month)
-- ✅ Heroku
-
-**Frontend:**
-- ✅ Vercel (Recommended - unlimited deployments)
-- ✅ Netlify (Free tier)
-- ✅ GitHub Pages
-
-**Database:**
-- ✅ MongoDB Atlas (Free tier - 512MB)
-
-Step-by-step deployment guide in `DEPLOYMENT.md`.
+- **Brand:** Hisaab
+- **Colors:** Indigo primary, pink accents, gradient accents
+- **Icons:** Lucide React
+- **Charts:** Recharts (responsive)
+- **Layout:** Card-based UI, sticky nav, mobile-first
 
 ---
 
-## 🎨 Design Highlights
+## Known limitations
 
-- **Color Scheme:** Indigo (Primary #6366f1) + Pink (Secondary #ec4899)
-- **Typography:** System fonts with fallback
-- **Spacing:** Consistent 4px grid
-- **Animations:** Smooth 200ms transitions
-- **Icons:** Lucide React (20px by default)
-- **Charts:** Recharts with responsive containers
-
----
-
-## 🔒 Security Features
-
-✅ Password hashing with bcrypt (10 salt rounds)  
-✅ JWT tokens (7-day expiration)  
-✅ HTTP-only cookies  
-✅ CORS enabled and configured  
-✅ Input validation with Zod  
-✅ User data isolation  
-✅ Authorization checks on protected routes  
-✅ No sensitive data in error messages  
+- Budgets and custom categories stored in **browser localStorage** (not synced to server per user)
+- Notification preferences in Settings are UI-only (not persisted to backend)
+- No password reset via “forgot password” link (change password requires login + email)
+- Email required for signup and sensitive account actions
+- `VITE_API_URL` must be set manually for production frontend (see DEPLOYMENT.md)
 
 ---
 
-## 📈 Performance
+## Possible future work
 
-- **Frontend:** Vite (sub-100ms cold start)
-- **Backend:** Express (lightweight & fast)
-- **Database:** MongoDB (scalable)
-- **Bundle Size:** ~250KB gzipped (frontend)
-- **First Paint:** <1s on typical connection
-
----
-
-## 🐛 Known Issues & Limitations
-
-- Expense edit UI not yet implemented (backend ready)
-- No offline mode
-- Single timezone (UTC)
-- No recurring expenses
-- No data export (CSV/PDF)
+- Persist budgets/categories per user in MongoDB
+- Forgot-password flow (email link)
+- Recurring expenses
+- PDF export
+- Push / email budget alerts (backend-driven)
+- OAuth (Google sign-in)
+- Mobile app (React Native)
 
 ---
 
-## 🛣️ Future Enhancements
+## Documentation index
 
-1. **Phase 2: Advanced Features**
-   - Edit expenses UI
-   - Recurring expenses
-   - Budget limits & alerts
-   - Multiple currencies
-
-2. **Phase 3: Analytics**
-   - Monthly/yearly trends
-   - Spending forecasts
-   - Custom reports
-   - Data export (CSV, PDF)
-
-3. **Phase 4: Social**
-   - Shared expenses (split bills)
-   - Group tracking
-   - Notifications
-   - Mobile app
+| File | Purpose |
+|------|---------|
+| [README.md](./README.md) | Overview, setup, API reference |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Atlas, Render, Vercel, email, CORS |
+| [TESTING.md](./TESTING.md) | Manual test scenarios |
+| [PROJECT_COMPLETE.md](./PROJECT_COMPLETE.md) | This summary |
 
 ---
 
-## 📞 Support & Contact
-
-For issues or questions:
-- Check `README.md` for setup help
-- Check `TESTING.md` for test troubleshooting
-- Check `DEPLOYMENT.md` for production issues
-- Create a GitHub issue for bugs
-
----
-
-## 📄 License
-
-ISC License - Feel free to use for personal or commercial projects.
-
----
-
-## 🙏 Thanks!
-
-Built with ❤️ using:
-- React 18
-- Express.js
-- MongoDB
-- Tailwind CSS
-- Recharts
-- Lucide Icons
-
----
-
-## 📊 Project Stats
+## Project stats (approximate)
 
 | Metric | Value |
-|--------|-------|
-| Total Files | 31 |
-| Backend Files | 11 |
-| Frontend Files | 14 |
-| Config Files | 6 |
-| Lines of Code | 2,500+ |
-| Dependencies | 30+ |
-| API Endpoints | 8 |
-| UI Components | 6 |
-| Database Models | 2 |
-| Test Scenarios | 20+ |
-| Documentation Pages | 3 |
+|--------|--------|
+| Frontend pages | 10 |
+| Reusable components | 15+ |
+| API endpoints | 14+ |
+| Database models | 3 |
+| Auth flows with email | 3 (register, password, delete) |
 
 ---
 
-**Status:** ✅ Ready for Production
-
-Deployment instructions are in `DEPLOYMENT.md`. Start building!
+**Ready for deployment** — follow [DEPLOYMENT.md](./DEPLOYMENT.md) to go live with MongoDB Atlas, Render/Vercel, and Resend or SMTP.

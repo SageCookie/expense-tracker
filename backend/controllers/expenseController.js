@@ -222,31 +222,21 @@ const getAnalytics = async (req, res) => {
         total: 0,
         count: 0,
         average: 0,
-        byCategory: {
-          Food: 0,
-          Transport: 0,
-          Entertainment: 0,
-          Bills: 0,
-          Other: 0,
-        },
+        byCategory: {},
         monthlyTrends: [],
         topCategories: [],
-        dailyAverages: {},
-        lastNinetyDays: [],
+        dailyAverages: 0,
+        last90DaysTotal: 0,
+        last30DaysCount: 0,
+        last90DaysCount: 0,
       });
     }
 
     // Calculate totals and category breakdown
     const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const byCategory = {
-      Food: 0,
-      Transport: 0,
-      Entertainment: 0,
-      Bills: 0,
-      Other: 0,
-    };
+    const byCategory = {};
     expenses.forEach((expense) => {
-      byCategory[expense.category] += expense.amount;
+      byCategory[expense.category] = (byCategory[expense.category] || 0) + expense.amount;
     });
 
     // Calculate monthly trends
@@ -267,10 +257,10 @@ const getAnalytics = async (req, res) => {
 
     // Top categories by amount
     const topCategories = Object.entries(byCategory)
-      .map(([category, total]) => ({
+      .map(([category, categoryTotal]) => ({
         category,
-        total: Math.round(total * 100) / 100,
-        percentage: ((total / total) * 100).toFixed(1),
+        total: Math.round(categoryTotal * 100) / 100,
+        percentage: total > 0 ? ((categoryTotal / total) * 100).toFixed(1) : '0.0',
       }))
       .sort((a, b) => b.total - a.total);
 

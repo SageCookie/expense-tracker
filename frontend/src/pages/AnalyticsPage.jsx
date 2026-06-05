@@ -23,11 +23,36 @@ export default function AnalyticsPage({ setIsAuthenticated }) {
     fetchAnalytics()
   }, [])
 
+  const normalizeAnalytics = (raw) => {
+    if (!raw || typeof raw !== 'object') return null
+
+    const dailyAverages =
+      typeof raw.dailyAverages === 'number'
+        ? raw.dailyAverages
+        : parseFloat(raw.dailyAverages) || 0
+
+    const last90DaysTotal =
+      typeof raw.last90DaysTotal === 'number'
+        ? raw.last90DaysTotal
+        : parseFloat(raw.last90DaysTotal) || 0
+
+    return {
+      total: Number(raw.total) || 0,
+      count: Number(raw.count) || 0,
+      average: Number(raw.average) || 0,
+      byCategory: raw.byCategory && typeof raw.byCategory === 'object' ? raw.byCategory : {},
+      monthlyTrends: Array.isArray(raw.monthlyTrends) ? raw.monthlyTrends : [],
+      topCategories: Array.isArray(raw.topCategories) ? raw.topCategories : [],
+      dailyAverages,
+      last90DaysTotal,
+    }
+  }
+
   const fetchAnalytics = async () => {
     try {
       setLoading(true)
       const response = await expenseAPI.getAnalytics()
-      setAnalytics(response.data)
+      setAnalytics(normalizeAnalytics(response.data))
       setError('')
     } catch (err) {
       setError('Failed to fetch analytics')
@@ -104,15 +129,23 @@ INSIGHTS
     )
   }
 
-  if (!analytics) {
+  if (!analytics || analytics.count === 0) {
     return (
       <MainLayout user={user} onLogout={handleLogout}>
         <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <Card className="bg-white dark:bg-gray-800 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Data Available</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Add some expenses to see analytics</p>
+          {error && <Alert message={error} type="error" onClose={() => setError('')} />}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Analytics</h1>
+            <p className="text-gray-600 dark:text-gray-400">Detailed insights into your spending patterns</p>
+          </div>
+          <Card className="bg-white dark:bg-gray-800 text-center py-12">
+            <TrendingUp size={48} className="mx-auto text-indigo-400 mb-4 opacity-60" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No expenses yet</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+              Add your first expense from the dashboard to unlock charts, trends, and spending insights here.
+            </p>
             <Button variant="primary" onClick={() => navigate('/dashboard')}>
-              Go to Dashboard
+              Add an expense
             </Button>
           </Card>
         </div>

@@ -1,245 +1,177 @@
-# 💰 Expense Tracker
+# Hisaab — Expense Tracker
 
-A modern, minimal web application to help users easily track, manage, and visualize their expenses. Built with **React**, **Tailwind CSS**, **Express.js**, and **MongoDB**.
+A modern full-stack web app to track, manage, and visualize personal expenses. Built with **React**, **Tailwind CSS**, **Express.js**, and **MongoDB**.
 
-## 🌟 Features
+## Features
 
-- 👤 **User Authentication** - Secure registration and login with JWT tokens
-- 💳 **Expense Management** - Add, edit, delete, and view expenses
-- 📊 **Analytics Dashboard** - Visualize spending by category with pie charts
-- 🏷️ **Category Organization** - Food, Transport, Entertainment, Bills, Other
-- 📈 **Statistics** - Total spent, average expense, expense count
-- 🎨 **Modern UI** - Clean, minimal design with Tailwind CSS
-- 🔒 **Secure** - Password hashing with bcrypt, JWT authentication
-- 📱 **Responsive** - Works seamlessly on desktop and mobile
+### Core
+- **User authentication** — JWT-based login with secure password hashing (bcrypt)
+- **Email verification** — 6-digit codes for registration, password change, and account deletion (Resend or Gmail SMTP)
+- **Expense management** — Add, edit, delete, filter, sort, and paginate transactions
+- **Multi-page dashboard** — Dedicated views for overview, history, analytics, budget, profile, and settings
 
-## 🏗️ Tech Stack
+### Insights & organization
+- **Analytics** — Pie, bar, and line charts; summary stats; exportable text report
+- **Budget management** — Per-category monthly limits with progress bars and overspend alerts
+- **Custom categories** — Create your own spending categories from the Budget page
+- **Default categories** — Food, Transport, Entertainment, Bills, Other (plus any custom ones)
 
-### Frontend
-- **React 18** - UI library
-- **Vite** - Fast build tool
-- **Tailwind CSS** - Styling
-- **React Router** - Navigation
-- **Axios** - HTTP client
-- **Recharts** - Charts & visualizations
-- **Lucide Icons** - Icon library
+### UX
+- **Dark / light theme** — Toggle on landing and dashboard navbar
+- **Multi-currency display** — Choose display currency in Settings (stored in browser)
+- **Responsive layout** — Sidebar + bottom nav on mobile; works on desktop and phone
+- **Empty states** — Friendly messaging when there is no expense data (e.g. Analytics)
 
-### Backend
-- **Node.js & Express.js** - Server
-- **MongoDB** - Database
-- **Mongoose** - ODM
-- **JWT** - Authentication
-- **Bcrypt** - Password hashing
-- **Zod** - Data validation
+## Tech stack
 
-## 🚀 Quick Start
+| Layer | Technologies |
+|-------|----------------|
+| Frontend | React 18, Vite, Tailwind CSS, React Router, Axios, Recharts, Lucide React |
+| Backend | Node.js, Express 5, Mongoose, JWT, bcrypt, Zod, Nodemailer, Resend |
+| Database | MongoDB (local or Atlas) |
+
+## Quick start
 
 ### Prerequisites
-- Node.js 16+
-- MongoDB (local or Atlas)
-- npm/yarn
+- Node.js 18+
+- MongoDB (local or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas))
+- Email provider for verification codes ([Resend](https://resend.com) or Gmail App Password)
 
-### Backend Setup
+### Backend
 
-1. **Navigate to backend directory:**
-   ```bash
-   cd backend
-   ```
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Edit .env — set MONGO_URI, JWT_SECRET, and email (RESEND_API_KEY or SMTP_*)
+npm run dev
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+API runs at `http://localhost:5000`. On startup, the console shows whether email delivery is configured.
 
-3. **Create .env file:**
-   ```bash
-   cp .env.example .env
-   ```
-   Update the values:
-   ```
-   MONGO_URI=mongodb://localhost:27017/expense-tracker
-   JWT_SECRET=your-secret-key-here
-   PORT=5000
-   NODE_ENV=development
-   ```
+### Frontend
 
-4. **Start the server:**
-   ```bash
-   npm run dev
-   ```
-   Server runs on `http://localhost:5000`
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### Frontend Setup
+App runs at `http://localhost:5173`.
 
-1. **Navigate to frontend directory:**
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-   Frontend runs on `http://localhost:5173`
-
-## 📁 Project Structure
+## Project structure
 
 ```
 expense-tracker/
 ├── backend/
 │   ├── controllers/
-│   │   ├── userController.js
-│   │   └── expenseController.js
+│   │   ├── userController.js      # Auth, email verification, account actions
+│   │   └── expenseController.js   # CRUD, filters, analytics
 │   ├── models/
 │   │   ├── User.js
-│   │   └── Expense.js
+│   │   ├── Expense.js
+│   │   └── EmailVerification.js
 │   ├── routes/
-│   │   ├── userRoutes.js
-│   │   └── expenseRoutes.js
 │   ├── middleware/
-│   │   └── authMiddleware.js
 │   ├── utils/
 │   │   ├── DB.js
-│   │   └── generateToken.js
+│   │   ├── generateToken.js
+│   │   ├── sendEmail.js           # Resend + SMTP
+│   │   └── verificationHelpers.js
 │   ├── server.js
-│   ├── package.json
-│   └── .env
+│   └── .env.example
 │
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Button.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── Card.jsx
-│   │   │   ├── Modal.jsx
-│   │   │   ├── Alert.jsx
-│   │   │   └── Charts.jsx
-│   │   ├── pages/
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── DashboardPage.jsx
-│   │   │   ├── AnalyticsPage.jsx
-│   │   │   ├── TransactionHistoryPage.jsx
-│   │   │   ├── BudgetPage.jsx
-│   │   │   ├── ProfilePage.jsx
-│   │   │   └── SettingsPage.jsx
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   └── package.json
+│   └── src/
+│       ├── components/            # UI + layout + charts + tables
+│       ├── pages/                 # Landing, auth, dashboard, history, etc.
+│       ├── context/               # Theme, currency
+│       ├── services/api.js
+│       └── utils/categories.js    # Default + custom categories
 │
-└── README.md
+├── README.md
+├── DEPLOYMENT.md
+├── PROJECT_COMPLETE.md
+└── TESTING.md
 ```
 
-## 🔌 API Endpoints
+## API endpoints
 
-### Authentication
-- `POST /api/users` - Register new user
-- `POST /api/users/login` - Login user
-- `POST /api/users/logout` - Logout user
+### Authentication (public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/users` | Start registration — sends verification email |
+| POST | `/api/users/register/confirm` | Confirm registration with email code |
+| POST | `/api/users/login` | Login |
+| POST | `/api/users/logout` | Logout |
 
-### Expenses (Protected - Requires JWT Token)
-- `GET /api/expenses` - Get all expenses for user
-- `POST /api/expenses` - Create new expense
-- `PUT /api/expenses/:id` - Update expense
-- `DELETE /api/expenses/:id` - Delete expense
-- `GET /api/expenses/summary` - Get expense summary/statistics
+### Account (protected — `Authorization: Bearer <token>`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/users/password/request-verification` | Request password change code |
+| POST | `/api/users/password/confirm` | Confirm password change with code |
+| POST | `/api/users/delete/request-verification` | Request account deletion code |
+| POST | `/api/users/delete/confirm` | Confirm account deletion with code |
 
-## 🧪 Testing the API
+### Expenses (protected)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/expenses` | List with filters, sort, pagination (`?page`, `limit`, `category`, `search`, dates, etc.) |
+| POST | `/api/expenses` | Create expense |
+| PUT | `/api/expenses/:id` | Update expense |
+| DELETE | `/api/expenses/:id` | Delete expense |
+| GET | `/api/expenses/summary` | Summary statistics |
+| GET | `/api/expenses/analytics` | Full analytics payload for charts |
 
-You can test the API using Postman or curl:
+## Environment variables
 
-### Register
-```bash
-curl -X POST http://localhost:5000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John Doe","email":"john@example.com","password":"password123"}'
-```
+### Backend (`backend/.env`)
 
-### Login
-```bash
-curl -X POST http://localhost:5000/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john@example.com","password":"password123"}'
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `MONGO_URI` | Yes | MongoDB connection string |
+| `JWT_SECRET` | Yes | Secret for signing JWTs (use a long random string in production) |
+| `PORT` | No | Default `5000` |
+| `RESEND_API_KEY` | Email* | Resend API key (recommended) |
+| `RESEND_FROM` | No | Sender, e.g. `Hisaab <onboarding@resend.dev>` |
+| `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` | Email* | Gmail or other SMTP (alternative to Resend) |
+| `SMTP_PORT`, `SMTP_SECURE`, `SMTP_FROM` | No | SMTP options |
 
-### Add Expense (use token from login)
-```bash
-curl -X POST http://localhost:5000/api/expenses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"amount":50.00,"category":"Food","description":"Lunch"}'
-```
+\*Configure **either** Resend **or** SMTP. Verification emails are required for register, password change, and account delete.
 
-## 🎨 Design Philosophy
+See `backend/.env.example` for a full template.
 
-- **Minimal & Modern** - Clean interface focusing on essential features
-- **User-Centric** - Intuitive navigation and easy expense tracking
-- **Responsive** - Adapts to all screen sizes
-- **Performance** - Fast load times with Vite and optimized components
+### Frontend (optional)
 
-## 📊 Expense Categories
+For production, set `VITE_API_URL` to your deployed API base (e.g. `https://your-api.onrender.com/api`) and use it in `frontend/src/services/api.js`. See [DEPLOYMENT.md](./DEPLOYMENT.md).
 
-- 🍔 Food
-- 🚗 Transport
-- 🎬 Entertainment
-- 💡 Bills
-- 📝 Other
+## App routes (frontend)
 
-## 🔒 Security
+| Path | Page |
+|------|------|
+| `/` | Landing |
+| `/login`, `/register` | Auth (register uses 2-step email verification) |
+| `/dashboard` | Overview, recent expenses, add expense |
+| `/history` | Full transaction table, filters, CSV export |
+| `/analytics` | Charts and insights |
+| `/budget` | Category budgets + custom categories |
+| `/profile` | User stats |
+| `/settings` | Password, currency, preferences, delete account |
+
+## Security
 
 - Passwords hashed with bcrypt
-- JWT tokens for stateless authentication
-- Protected routes with auth middleware
-- CORS enabled
-- HttpOnly cookies for token storage
+- JWT in `Authorization` header (also httpOnly cookie on login)
+- Protected expense and account routes
+- Email verification before registration completes, password change, or account deletion
+- Zod validation on expense input
+- Per-user data isolation on all expense queries
 
-## 📝 Environment Variables
+## Deployment
 
-### Backend (.env)
-```
-MONGO_URI=mongodb://localhost:27017/expense-tracker
-JWT_SECRET=your-secret-key-change-in-production
-PORT=5000
-NODE_ENV=development
-```
+See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for MongoDB Atlas, Render/Vercel, CORS, email in production, and troubleshooting.
 
-### Frontend (.env)
-Optional - Vite proxy handles API calls to localhost:5000
 
-## 🚀 Deployment
-
-### Backend (Vercel/Render)
-1. Push code to GitHub
-2. Connect to Vercel/Render
-3. Set environment variables
-4. Deploy
-
-### Frontend (Vercel/Netlify)
-1. Push code to GitHub
-2. Connect to Vercel/Netlify
-3. Set build command: `npm run build`
-4. Deploy
-
-## 📞 Support
-
-For issues or questions, please create an issue in the repository.
-
-## 📄 License
+## License
 
 ISC
-
----
-
-**Happy Tracking! 💸**
