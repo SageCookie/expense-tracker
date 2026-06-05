@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from './utils/DB.js';
+import { verifyEmailSetup } from './utils/sendEmail.js';
 import userRoutes from './routes/userRoutes.js';
 import expenseRoutes from './routes/expenseRoutes.js';
 
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 
 const startServer = async () => {
     await connectDB();
+    await verifyEmailSetup();
 
     app.listen(PORT, () => {
         console.log(`Server is locked in on port ${PORT}`);

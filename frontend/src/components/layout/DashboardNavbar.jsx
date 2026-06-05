@@ -1,8 +1,10 @@
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Moon, Sun } from 'lucide-react'
 import { useState } from 'react'
+import { useTheme } from '../../context/ThemeContext'
 
 export default function DashboardNavbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isDark, toggleTheme } = useTheme()
 
   return (
     <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-40">
@@ -21,7 +23,20 @@ export default function DashboardNavbar({ user, onLogout }) {
         {/* Right - Action buttons */}
         <div className="flex items-center gap-2 sm:gap-4">
           <span className="text-sm text-gray-700 dark:text-gray-300 font-medium hidden sm:inline">{user.name}</span>
-          
+
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300"
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? (
+              <Sun size={20} className="text-yellow-500" />
+            ) : (
+              <Moon size={20} className="text-indigo-600" />
+            )}
+          </button>
+
           {/* Hamburger menu button - mobile only */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

@@ -2,7 +2,7 @@ import { X } from 'lucide-react'
 import Button from './Button'
 import Input from './Input'
 
-const CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Bills', 'Other']
+import { getAllCategories } from '../utils/categories'
 const DATE_RANGES = [
   { label: 'This Week', value: 'thisWeek' },
   { label: 'This Month', value: 'thisMonth' },
@@ -13,7 +13,8 @@ const DATE_RANGES = [
   { label: 'Custom', value: 'custom' },
 ]
 
-export default function FilterPanel({ filters, onFiltersChange, onClearFilters }) {
+export default function FilterPanel({ filters, onFiltersChange, onClearFilters, symbol = '₹', categories }) {
+  const categoryOptions = categories ?? getAllCategories()
   const handleDateRangeChange = (range) => {
     onFiltersChange({ ...filters, dateRange: range, showCustomDates: range === 'custom' })
   }
@@ -82,7 +83,7 @@ export default function FilterPanel({ filters, onFiltersChange, onClearFilters }
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
           >
             <option value="all">All Categories</option>
-            {CATEGORIES.map((cat) => (
+            {categoryOptions.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
@@ -93,7 +94,7 @@ export default function FilterPanel({ filters, onFiltersChange, onClearFilters }
         {/* Min Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Min Amount (₹)
+            Min Amount ({symbol})
           </label>
           <input
             type="number"
@@ -108,7 +109,7 @@ export default function FilterPanel({ filters, onFiltersChange, onClearFilters }
         {/* Max Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Max Amount (₹)
+            Max Amount ({symbol})
           </label>
           <input
             type="number"

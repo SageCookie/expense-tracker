@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Lock, Trash2, Bell, Eye, EyeOff } from 'lucide-react'
+import { Lock, Trash2, Bell, Eye, EyeOff, Globe } from 'lucide-react'
 import MainLayout from '../components/layout/MainLayout'
 import Button from '../components/Button'
 import Card from '../components/Card'
@@ -8,10 +8,12 @@ import Modal from '../components/Modal'
 import Alert from '../components/Alert'
 import Input from '../components/Input'
 import { authAPI } from '../services/api'
+import { useCurrency } from '../context/CurrencyContext'
 
 export default function SettingsPage({ setIsAuthenticated }) {
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const { currency, setCurrency, CURRENCIES } = useCurrency()
 
   const [activeTab, setActiveTab] = useState('password')
   const [showPassword, setShowPassword] = useState(false)
@@ -22,6 +24,12 @@ export default function SettingsPage({ setIsAuthenticated }) {
   const [loading, setLoading] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleteCurrentPassword, setDeleteCurrentPassword] = useState('')
+  const [deleteVerificationCode, setDeleteVerificationCode] = useState('')
+  const [deleteStep, setDeleteStep] = useState('form')
+  const [passwordStep, setPasswordStep] = useState('form')
+  const [passwordVerificationCode, setPasswordVerificationCode] = useState('')
+  const [verificationEmail, setVerificationEmail] = useState(user.email || '')
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -35,7 +43,7 @@ export default function SettingsPage({ setIsAuthenticated }) {
     budgetAlerts: true,
   })
 
-  const handlePasswordChange = async (e) => {
+  const handleRequestPasswordVerification = async (e) => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -52,28 +60,90 @@ export default function SettingsPage({ setIsAuthenticated }) {
 
     try {
       setLoading(true)
-      await authAPI.updatePassword({
+      const response = await authAPI.requestPasswordVerification({
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       })
-      setSuccess('Password changed successfully!')
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setVerificationEmail(response.data.email || user.email)
+      setPasswordStep('verify')
+      setSuccess(response.data.message || 'Verification code sent to your email')
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change password')
+      setError(err.response?.data?.message || 'Failed to send verification email')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== 'DELETE') {
-      setError('Please type DELETE to confirm')
+  const handleConfirmPasswordChange = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+
+    if (!passwordVerificationCode.trim()) {
+      setError('Enter the verification code from your email')
       return
     }
 
     try {
       setLoading(true)
-      await authAPI.deleteAccount()
+      await authAPI.confirmPasswordChange({ code: passwordVerificationCode.trim() })
+      setSuccess('Password changed successfully!')
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setPasswordVerificationCode('')
+      setPasswordStep('form')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to confirm password change')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resetPasswordFlow = () => {
+    setPasswordStep('form')
+    setPasswordVerificationCode('')
+  }
+
+  const handleRequestDeleteVerification = async () => {
+    setError('')
+    setSuccess('')
+
+    if (!deleteCurrentPassword) {
+      setError('Enter your current password to continue')
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await authAPI.requestDeleteVerification({
+        currentPassword: deleteCurrentPassword,
+      })
+      setVerificationEmail(response.data.email || user.email)
+      setDeleteStep('verify')
+      setSuccess(response.data.message || 'Verification code sent to your email')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send verification email')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleConfirmDeleteAccount = async () => {
+    setError('')
+    setSuccess('')
+
+    if (deleteConfirmText !== 'DELETE') {
+      setError('Please type DELETE to confirm')
+      return
+    }
+
+    if (!deleteVerificationCode.trim()) {
+      setError('Enter the verification code from your email')
+      return
+    }
+
+    try {
+      setLoading(true)
+      await authAPI.confirmAccountDeletion({ code: deleteVerificationCode.trim() })
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       setIsAuthenticated(false)
@@ -83,6 +153,14 @@ export default function SettingsPage({ setIsAuthenticated }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const resetDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setDeleteConfirmText('')
+    setDeleteCurrentPassword('')
+    setDeleteVerificationCode('')
+    setDeleteStep('form')
   }
 
   const handleLogout = async () => {
@@ -123,6 +201,17 @@ export default function SettingsPage({ setIsAuthenticated }) {
             Password
           </button>
           <button
+            onClick={() => setActiveTab('currency')}
+            className={`pb-3 px-1 font-medium border-b-2 transition-colors ${
+              activeTab === 'currency'
+                ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-gray-900 dark:hover:text-gray-300'
+            }`}
+          >
+            <Globe size={18} className="inline mr-2" />
+            Currency
+          </button>
+          <button
             onClick={() => setActiveTab('preferences')}
             className={`pb-3 px-1 font-medium border-b-2 transition-colors ${
               activeTab === 'preferences'
@@ -149,8 +238,15 @@ export default function SettingsPage({ setIsAuthenticated }) {
         {/* Password Tab */}
         {activeTab === 'password' && (
           <Card className="bg-white dark:bg-gray-800 max-w-2xl">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Change Password</h2>
-            <form onSubmit={handlePasswordChange} className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Change Password</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              {passwordStep === 'form'
+                ? 'We will email a verification code to confirm this change.'
+                : `Enter the 6-digit code sent to ${verificationEmail}`}
+            </p>
+
+            {passwordStep === 'form' ? (
+            <form onSubmit={handleRequestPasswordVerification} className="space-y-4">
               <div className="relative">
                 <Input
                   label="Current Password"
@@ -206,9 +302,69 @@ export default function SettingsPage({ setIsAuthenticated }) {
               </div>
 
               <Button type="submit" variant="primary" disabled={loading}>
-                {loading ? 'Updating...' : 'Update Password'}
+                {loading ? 'Sending...' : 'Send Verification Email'}
               </Button>
             </form>
+            ) : (
+            <form onSubmit={handleConfirmPasswordChange} className="space-y-4">
+              <Input
+                label="Verification Code"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={passwordVerificationCode}
+                onChange={(e) => setPasswordVerificationCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="6-digit code"
+                required
+              />
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" onClick={resetPasswordFlow} className="flex-1">
+                  Back
+                </Button>
+                <Button type="submit" variant="primary" disabled={loading} className="flex-1">
+                  {loading ? 'Confirming...' : 'Confirm Password Change'}
+                </Button>
+              </div>
+            </form>
+            )}
+          </Card>
+        )}
+
+        {/* Currency Tab */}
+        {activeTab === 'currency' && (
+          <Card className="bg-white dark:bg-gray-800 max-w-2xl">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+              <Globe size={20} />
+              Display Currency
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Choose the currency used for amounts across the dashboard, history, and analytics.
+            </p>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {CURRENCIES.map((curr) => (
+                <button
+                  key={curr.code}
+                  type="button"
+                  onClick={() => {
+                    setCurrency(curr.code)
+                    setSuccess(`Currency set to ${curr.code}`)
+                  }}
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
+                    currency === curr.code
+                      ? 'bg-gradient-to-r from-indigo-600 to-pink-600 text-white shadow-lg'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold">{curr.code}</div>
+                      <div className="text-sm opacity-75">{curr.name}</div>
+                    </div>
+                    <div className="text-xl font-bold">{curr.symbol}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </Card>
         )}
 
@@ -290,45 +446,84 @@ export default function SettingsPage({ setIsAuthenticated }) {
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false)
-          setDeleteConfirmText('')
-        }}
+        onClose={resetDeleteModal}
         title="Delete Account"
       >
         <div className="bg-red-50 dark:bg-red-900 p-4 rounded-lg mb-4">
           <p className="text-red-800 dark:text-red-200 text-sm">
-            ⚠️ This will permanently delete your account and all your expense data. This cannot be undone.
+            This will permanently delete your account and all expense data. We will email a verification code first.
           </p>
         </div>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          To confirm, type <strong>DELETE</strong> below:
-        </p>
-        <Input
-          placeholder="Type DELETE"
-          value={deleteConfirmText}
-          onChange={(e) => setDeleteConfirmText(e.target.value)}
-        />
-        <div className="flex gap-3 mt-6">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsDeleteModalOpen(false)
-              setDeleteConfirmText('')
-            }}
-            className="flex-1"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleDeleteAccount}
-            disabled={loading}
-            className="flex-1 bg-red-600 hover:bg-red-700"
-          >
-            {loading ? 'Deleting...' : 'Delete Account'}
-          </Button>
-        </div>
+
+        {deleteStep === 'form' ? (
+          <>
+            <Input
+              label="Current Password"
+              type="password"
+              value={deleteCurrentPassword}
+              onChange={(e) => setDeleteCurrentPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+            />
+            <div className="flex gap-3 mt-6">
+              <Button variant="outline" onClick={resetDeleteModal} className="flex-1">
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleRequestDeleteVerification}
+                disabled={loading}
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                {loading ? 'Sending...' : 'Send Verification Email'}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Enter the code sent to <strong>{verificationEmail}</strong>, then type DELETE to confirm.
+            </p>
+            <Input
+              label="Verification Code"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={deleteVerificationCode}
+              onChange={(e) => setDeleteVerificationCode(e.target.value.replace(/\D/g, ''))}
+              placeholder="6-digit code"
+            />
+            <div className="mt-4">
+              <Input
+                label='Type "DELETE" to confirm'
+                placeholder="DELETE"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDeleteStep('form')
+                  setDeleteVerificationCode('')
+                  setDeleteConfirmText('')
+                }}
+                className="flex-1"
+              >
+                Back
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleConfirmDeleteAccount}
+                disabled={loading}
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                {loading ? 'Deleting...' : 'Delete Account'}
+              </Button>
+            </div>
+          </>
+        )}
       </Modal>
     </MainLayout>
   )

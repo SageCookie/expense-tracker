@@ -122,7 +122,12 @@ expense-tracker/
 │   │   ├── pages/
 │   │   │   ├── Login.jsx
 │   │   │   ├── Register.jsx
-│   │   │   └── Dashboard.jsx
+│   │   │   ├── DashboardPage.jsx
+│   │   │   ├── AnalyticsPage.jsx
+│   │   │   ├── TransactionHistoryPage.jsx
+│   │   │   ├── BudgetPage.jsx
+│   │   │   ├── ProfilePage.jsx
+│   │   │   └── SettingsPage.jsx
 │   │   ├── services/
 │   │   │   └── api.js
 │   │   ├── App.jsx

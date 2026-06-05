@@ -14,16 +14,16 @@ export function BarChartComponent({ data, dataKey, fill = '#6366f1' }) {
   )
 }
 
-export function PieChartComponent({ data, colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#ef4444'] }) {
+export function PieChartComponent({ data, colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#ef4444'], symbol = '$' }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
-        <Pie data={data} cx="50%" cy="50%" labelLine={false} label={({ name, value }) => `${name}: $${value}`} outerRadius={100} fill="#8884d8" dataKey="value">
+        <Pie data={data} cx="50%" cy="50%" labelLine={false} label={({ name, value }) => `${name}: ${symbol}${value}`} outerRadius={100} fill="#8884d8" dataKey="value">
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
           ))}
         </Pie>
-        <Tooltip />
+        <Tooltip formatter={(value) => `${symbol}${Number(value).toFixed(2)}`} />
       </PieChart>
     </ResponsiveContainer>
   )

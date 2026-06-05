@@ -1,13 +1,5 @@
-import { Edit2, Trash2, Download, ArrowUpDown } from 'lucide-react'
-import Button from './Button'
-
-const categoryColors = {
-  Food: '#f59e0b',
-  Transport: '#3b82f6',
-  Entertainment: '#ec4899',
-  Bills: '#6366f1',
-  Other: '#10b981',
-}
+import { Edit2, Trash2, ArrowUpDown } from 'lucide-react'
+import { getCategoryColor } from '../utils/categories'
 
 export default function TransactionTable({
   expenses,
@@ -24,15 +16,16 @@ export default function TransactionTable({
     onSort(field, newOrder)
   }
 
-  const SortHeader = ({ field, label }) => (
+  const SortHeader = ({ field, label, className = '' }) => (
     <button
+      type="button"
       onClick={() => handleSort(field)}
-      className="flex items-center gap-1 text-gray-900 dark:text-white font-semibold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+      className={`inline-flex items-center gap-1 text-left text-gray-900 dark:text-white font-semibold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${className}`}
     >
       {label}
       <ArrowUpDown
         size={14}
-        className={`transition-transform ${
+        className={`flex-shrink-0 transition-transform ${
           sortConfig.key === field
             ? sortConfig.order === 'desc'
               ? 'rotate-180'
@@ -66,20 +59,33 @@ export default function TransactionTable({
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full table-fixed min-w-[720px]">
+          <colgroup>
+            <col className="w-[12%]" />
+            <col className="w-[18%]" />
+            <col className="w-[38%]" />
+            <col className="w-[14%]" />
+            <col className="w-[18%]" />
+          </colgroup>
           <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <tr>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <SortHeader field="date" label="Date" />
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <SortHeader field="category" label="Category" />
               </th>
-              <th className="px-6 py-4 text-left">Description</th>
-              <th className="px-6 py-4 text-right">
-                <SortHeader field="amount" label="Amount" />
+              <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Description
               </th>
-              <th className="px-6 py-4 text-center">Actions</th>
+              <th className="px-4 lg:px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <span className="inline-flex justify-end w-full">
+                  <SortHeader field="amount" label="Amount" />
+                </span>
+              </th>
+              <th className="px-4 lg:px-6 py-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -88,29 +94,28 @@ export default function TransactionTable({
                 key={expense._id}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <td className="px-6 py-4 text-gray-900 dark:text-white">
+                <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-white whitespace-nowrap">
                   {new Date(expense.date).toLocaleDateString('en-IN')}
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
+                <td className="px-4 lg:px-6 py-4">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: categoryColors[expense.category] }}
-                    ></div>
-                    <span className="text-gray-900 dark:text-white font-medium">
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: getCategoryColor(expense.category) }}
+                    />
+                    <span className="text-sm text-gray-900 dark:text-white font-medium truncate">
                       {expense.category}
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                <td className="px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 truncate">
                   {expense.description || '-'}
                 </td>
-                <td className="px-6 py-4 text-right font-semibold text-gray-900 dark:text-white">
-                  {symbol}
-                  {expense.amount.toFixed(2)}
+                <td className="px-4 lg:px-6 py-4 text-sm text-right font-semibold text-gray-900 dark:text-white tabular-nums whitespace-nowrap">
+                  {symbol}{expense.amount.toFixed(2)}
                 </td>
-                <td className="px-6 py-4 text-center">
-                  <div className="flex items-center justify-center gap-2">
+                <td className="px-4 lg:px-6 py-4">
+                  <div className="flex items-center justify-center gap-1">
                     <button
                       onClick={() => onEdit(expense)}
                       className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-lg transition-colors"
@@ -141,13 +146,13 @@ export default function TransactionTable({
             className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600"
           >
             <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2 flex-1">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <div
                   className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: categoryColors[expense.category] }}
-                ></div>
+                  style={{ backgroundColor: getCategoryColor(expense.category) }}
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                  <p className="font-semibold text-gray-900 dark:text-white truncate">
                     {expense.category}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -155,14 +160,13 @@ export default function TransactionTable({
                   </p>
                 </div>
               </div>
-              <p className="font-bold text-gray-900 dark:text-white whitespace-nowrap ml-2">
-                {symbol}
-                {expense.amount.toFixed(2)}
+              <p className="font-bold text-gray-900 dark:text-white whitespace-nowrap ml-2 tabular-nums text-sm">
+                {symbol}{expense.amount.toFixed(2)}
               </p>
             </div>
 
             {expense.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                 {expense.description}
               </p>
             )}

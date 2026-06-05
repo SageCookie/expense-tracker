@@ -10,19 +10,12 @@ import { PieChartComponent } from '../components/Charts'
 import { expenseAPI, authAPI } from '../services/api'
 import { useCurrency } from '../context/CurrencyContext'
 import MainLayout from '../components/layout/MainLayout'
-
-const CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Bills', 'Other']
-const categoryColors = {
-  Food: '#f59e0b',
-  Transport: '#3b82f6',
-  Entertainment: '#ec4899',
-  Bills: '#6366f1',
-  Other: '#10b981',
-}
+import { getAllCategories, getCategoryColor } from '../utils/categories'
 
 export default function DashboardPage({ setIsAuthenticated }) {
   const navigate = useNavigate()
   const { getCurrencySymbol } = useCurrency()
+  const categories = getAllCategories()
   const [expenses, setExpenses] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState({ amount: '', category: 'Food', description: '' })
@@ -103,7 +96,7 @@ export default function DashboardPage({ setIsAuthenticated }) {
 
 const totalSpent = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0)
   
-  const categoryTotals = CATEGORIES.map((cat) => ({
+  const categoryTotals = categories.map((cat) => ({
     name: cat,
     value: expenses
       .filter((exp) => exp.category === cat)
@@ -237,7 +230,7 @@ const totalSpent = expenses.reduce((sum, expense) => sum + (expense.amount || 0)
                         <div className="flex items-center gap-3">
                           <div
                             className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: categoryColors[expense.category] }}
+                            style={{ backgroundColor: getCategoryColor(expense.category) }}
                           ></div>
                           <div>
                             <p className="font-medium text-gray-900 dark:text-white">{expense.category}</p>
@@ -272,7 +265,7 @@ const totalSpent = expenses.reduce((sum, expense) => sum + (expense.amount || 0)
           {categoryTotals.length > 0 && (
             <Card className="bg-white dark:bg-gray-800">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">By Category</h2>
-              <PieChartComponent data={categoryTotals} />
+              <PieChartComponent data={categoryTotals} symbol={symbol}/>
               <div className="mt-6 space-y-2 text-sm">
                 {categoryTotals.map((cat) => (
                   <div key={cat.name} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
@@ -308,7 +301,7 @@ const totalSpent = expenses.reduce((sum, expense) => sum + (expense.amount || 0)
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary"
             >
-              {CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>

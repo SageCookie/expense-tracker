@@ -12,12 +12,12 @@ import TransactionTable from '../components/TransactionTable'
 import PaginationBar from '../components/PaginationBar'
 import { expenseAPI, authAPI } from '../services/api'
 import { useCurrency } from '../context/CurrencyContext'
-
-const CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Bills', 'Other']
+import { getAllCategories } from '../utils/categories'
 
 export default function TransactionHistoryPage({ setIsAuthenticated }) {
   const navigate = useNavigate()
   const { getCurrencySymbol } = useCurrency()
+  const categories = getAllCategories()
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const symbol = getCurrencySymbol()
 
@@ -271,6 +271,8 @@ export default function TransactionHistoryPage({ setIsAuthenticated }) {
           filters={filters}
           onFiltersChange={setFilters}
           onClearFilters={handleClearFilters}
+          symbol={symbol}
+          categories={categories}
         />
 
         {/* Search */}
@@ -332,7 +334,7 @@ export default function TransactionHistoryPage({ setIsAuthenticated }) {
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary"
               >
-                {CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>

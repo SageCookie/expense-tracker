@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const expenseSchema = z.object({
   amount: z.number().positive('Amount must be positive'),
-  category: z.enum(['Food', 'Transport', 'Entertainment', 'Bills', 'Other']),
+  category: z.string().trim().min(1, 'Category is required').max(30, 'Category name is too long'),
   description: z.string().optional(),
   date: z.date().optional(),
 });

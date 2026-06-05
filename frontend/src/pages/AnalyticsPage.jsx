@@ -219,7 +219,7 @@ INSIGHTS
           <Card className="bg-white dark:bg-gray-800">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Category Breakdown</h2>
             {categoryData.length > 0 ? (
-              <PieChartComponent data={categoryData} />
+              <PieChartComponent data={categoryData} symbol={symbol} />
             ) : (
               <p className="text-center text-gray-600 dark:text-gray-400 py-8">No data available</p>
             )}
