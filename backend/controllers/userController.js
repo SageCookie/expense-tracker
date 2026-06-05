@@ -205,9 +205,13 @@ const confirmRegistration = async (req, res) => {
 const authUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        const normalizedEmail = email?.toLowerCase().trim();
 
-        // 1. Find the user by email
-        const user = await User.findOne({ email });
+        if (!normalizedEmail || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        const user = await User.findOne({ email: normalizedEmail });
 
         // 2. Check if user exists AND password matches the hashed password
         if (user && (await bcrypt.compare(password, user.password))) {

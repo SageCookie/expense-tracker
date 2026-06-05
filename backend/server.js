@@ -14,10 +14,26 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: 'https://expense-tracker-a3y7.vercel.app', 
-    credentials: true 
-}));
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return callback(null, true);
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
@@ -30,8 +46,11 @@ const startServer = async () => {
     await connectDB();
     await verifyEmailSetup();
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`Server is locked in on port ${PORT}`);
+        if (process.env.FRONTEND_URL) {
+            console.log(`CORS allows: ${process.env.FRONTEND_URL}`);
+        }
     });
 };
 
